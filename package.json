@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
+    "test": "node --test",
     "paypal:smoke": "node scripts/paypal-smoke-test.js"
   },
   "repository": {
@@ -18,5 +19,8 @@
   "bugs": {
     "url": "https://github.com/eternal-kernel/invoiceflow/issues"
   },
-  "homepage": "https://github.com/eternal-kernel/invoiceflow#readme"
+  "homepage": "https://github.com/eternal-kernel/invoiceflow#readme",
+  "dependencies": {
+    "zod": "^4.6.7"
+  }
 }
