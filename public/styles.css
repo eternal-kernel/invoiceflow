@@ -1,0 +1,21 @@
+*, *::before, *::after { box-sizing: border-box; }
+body { font-family: system-ui, sans-serif; margin: 0; padding: 2rem; background: #f5f5f5; color: #222; }
+h1 { font-size: 1.5rem; margin-bottom: 1.5rem; }
+textarea { width: 100%; max-width: 640px; height: 100px; padding: .5rem; font-size: 1rem; border: 1px solid #bbb; border-radius: 4px; resize: vertical; }
+button { padding: .5rem 1.2rem; font-size: 1rem; border: none; border-radius: 4px; cursor: pointer; background: #1a73e8; color: #fff; margin-top: .5rem; }
+button:hover { background: #1558b0; }
+#loading { margin-top: 1rem; color: #555; display: none; }
+#message { margin-top: 1rem; padding: .75rem; border-radius: 4px; display: block; }
+#message:empty { display: none; }
+#message.error { background: #fdecea; color: #c62828; border: 1px solid #ef9a9a; }
+#message.success { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+#invoice-form { display: none; margin-top: 1.5rem; max-width: 640px; }
+#invoice-form label { display: block; margin-bottom: .25rem; font-weight: 600; }
+#invoice-form input[type=text], #invoice-form input[type=email], #invoice-form input[type=date], #invoice-form select {
+  width: 100%; padding: .4rem; font-size: 1rem; border: 1px solid #bbb; border-radius: 4px; margin-bottom: 1rem;
+}
+.item-row { display: flex; gap: .5rem; margin-bottom: .5rem; }
+.item-row input { flex: 1; padding: .4rem; font-size: .95rem; border: 1px solid #bbb; border-radius: 4px; }
+#confirm-section { display: none; margin-top: 1.5rem; }
+#createDraftBtn { background: #2e7d32; }
+#createDraftBtn:hover { background: #1b5e20; }

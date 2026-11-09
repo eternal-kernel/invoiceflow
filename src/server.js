@@ -1,4 +1,6 @@
 const http = require('node:http');
+const fs = require('node:fs');
+const path = require('node:path');
 const { extractInvoiceDraft } = require('./ai/invoice-extractor');
 const { createDraftInvoice } = require('../src/paypal/invoice-service'); // default PayPal service
 
@@ -96,6 +98,32 @@ function createServer(options = {}) {
         const isApiFailure = result.errors && result.errors.some((e) => ['api', 'network', 'response', 'oauth', 'credentials'].includes(e.path));
         const statusCode = isApiFailure ? 502 : 400;
         return { status: statusCode, payload: { success: false, errors: result.errors } };
+      });
+      return;
+    }
+
+    // Static file serving for GET requests
+    if (req.method === 'GET') {
+      // Serve root as index.html
+      let filePath = url.pathname === '/' ? 'index.html' : url.pathname.replace(/^\//, '');
+      // Prevent path traversal – only serve files directly under public/
+      if (filePath.includes('..') || filePath.includes('/')) {
+        res.writeHead(404, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Not Found' }));
+        return;
+      }
+      const MIME = { html: 'text/html', css: 'text/css', js: 'application/javascript' };
+      const ext = filePath.split('.').pop();
+      const contentType = MIME[ext] || 'application/octet-stream';
+      const absPath = path.join(__dirname, '..', 'public', filePath);
+      fs.readFile(absPath, (err, data) => {
+        if (err) {
+          res.writeHead(404, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Not Found' }));
+          return;
+        }
+        res.writeHead(200, { 'Content-Type': contentType });
+        res.end(data);
       });
       return;
     }
