@@ -296,3 +296,37 @@ Follow these steps to review the end-to-end workflow:
    - Confirm the status updates to creating draft.
    - Inspect the returned safe PayPal result: PayPal Invoice ID (e.g., `INV2-...`), Status (`DRAFT`), and direct Sandbox view links.
    - Verify that no invoice was sent or charged.
+
+---
+
+## 13. Deployment (Render)
+
+InvoiceFlow is configured for one-click or manual web service deployment on [Render](https://render.com/).
+
+### Option A: Render Blueprint (`render.yaml`)
+1. Create a new Web Service or Blueprint on Render and connect this repository.
+2. Render detects `render.yaml` automatically and configures:
+   - **Environment**: Node.js (`NODE_VERSION: 20`)
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Health Check Path**: `/health`
+3. In the Render Dashboard, fill in the values for the non-synced environment variables.
+
+### Option B: Manual Web Service Setup
+1. In the Render Dashboard, click **New +** $\rightarrow$ **Web Service**.
+2. Select your repository.
+3. Configure the service settings:
+   - **Runtime**: `Node`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+   - **Health Check Path**: `/health`
+4. Add the required Environment Variables in the **Environment** tab:
+   - `PAYPAL_CLIENT_ID`: Your PayPal Sandbox App Client ID.
+   - `PAYPAL_CLIENT_SECRET`: Your PayPal Sandbox App Secret.
+   - `PAYPAL_API_BASE_URL`: `https://api-m.sandbox.paypal.com`
+   - `PAYPAL_TEST_BUYER_EMAIL`: Your Sandbox personal test buyer email.
+   - `GEMINI_API_KEY`: Your Google Gemini API key.
+   - `GEMINI_MODEL`: `gemini-3.1-flash-lite`
+
+Render automatically injects the `PORT` environment variable; the Node.js server automatically listens on `process.env.PORT` and binds to `0.0.0.0`.
+

@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: invoiceflow
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: PAYPAL_API_BASE_URL
+        value: https://api-m.sandbox.paypal.com
+      - key: GEMINI_MODEL
+        value: gemini-3.1-flash-lite
+      - key: PAYPAL_CLIENT_ID
+        sync: false
+      - key: PAYPAL_CLIENT_SECRET
+        sync: false
+      - key: PAYPAL_TEST_BUYER_EMAIL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false

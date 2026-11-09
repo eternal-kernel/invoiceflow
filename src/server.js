@@ -5,6 +5,7 @@ const { extractInvoiceDraft } = require('./ai/invoice-extractor');
 const { createDraftInvoice } = require('../src/paypal/invoice-service'); // default PayPal service
 
 const PORT = process.env.PORT || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
 const MAX_BODY_SIZE = 10 * 1024; // 10 KB
 
 /**
@@ -182,7 +183,7 @@ function handleJsonBody(req, res, asyncHandler) {
 const defaultServer = createServer();
 
 if (require.main === module) {
-  defaultServer.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  defaultServer.listen(PORT, HOST, () => console.log(`Server running at http://${HOST}:${PORT}`));
 }
 
 module.exports = defaultServer;
