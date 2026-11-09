@@ -173,6 +173,13 @@ async function runEvaluation(extractor, cases) {
       extractorResult = await extractor(evalCase.input.text, {
         referenceDate: evalCase.input.referenceDate,
       });
+      // Handle rate limits (429) gracefully on live APIs
+      if (!extractorResult.success && extractorResult.errors && extractorResult.errors.some(e => e.message && e.message.includes('429'))) {
+        await new Promise(r => setTimeout(r, 22000));
+        extractorResult = await extractor(evalCase.input.text, {
+          referenceDate: evalCase.input.referenceDate,
+        });
+      }
     } catch (err) {
       extractorResult = {
         success: false,
