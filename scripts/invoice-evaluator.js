@@ -50,6 +50,7 @@ function evaluateCase(evalCase, extractorResult) {
     description: evalCase.description,
     expectedType: expected.type,
     pass: false,
+    status: 'failed',
     fieldResults: {},
     clarificationCorrect: null,
     notes: [],
@@ -186,7 +187,19 @@ async function runEvaluation(extractor, cases) {
         errors: [{ path: 'exception', field: 'exception', message: err.message }],
       };
     }
-    caseResults.push(evaluateCase(evalCase, extractorResult));
+    const result = evaluateCase(evalCase, extractorResult);
+    const isRateLimitError =
+      !extractorResult.success &&
+      Array.isArray(extractorResult.errors) &&
+      extractorResult.errors.some(e => e.message && e.message.includes('429'));
+    if (isRateLimitError) {
+      result.status = 'error';
+      result.errorType = 'rate_limit';
+      result.notes.push('Unresolved Gemini HTTP 429 rate limit after retry; excluded from accuracy denominators.');
+    } else if (result.pass) {
+      result.status = 'passed';
+    }
+    caseResults.push(result);
   }
 
   return buildReport(caseResults, cases);
@@ -203,13 +216,15 @@ function buildReport(caseResults, cases) {
   const heldOutResults = caseResults.filter(r => r.set === 'held-out');
 
   function setMetrics(results) {
-    const total = results.length;
-    const fullyCorrect = results.filter(r => r.pass).length;
+    const errors = results.filter(r => r.status === 'error').length;
+    const evaluated = results.filter(r => r.status !== 'error');
+    const total = evaluated.length;
+    const fullyCorrect = evaluated.filter(r => r.pass).length;
 
     // Field-level accuracy: collect all boolean field results across all cases
     const fieldCounts = {};
     const fieldCorrects = {};
-    for (const r of results) {
+    for (const r of evaluated) {
       for (const [field, correct] of Object.entries(r.fieldResults)) {
         fieldCounts[field] = (fieldCounts[field] || 0) + 1;
         if (correct) fieldCorrects[field] = (fieldCorrects[field] || 0) + 1;
@@ -225,11 +240,13 @@ function buildReport(caseResults, cases) {
     }
 
     // Clarification accuracy: only count cases where clarificationCorrect !== null
-    const clarifyCases = results.filter(r => r.clarificationCorrect !== null);
+    const clarifyCases = evaluated.filter(r => r.clarificationCorrect !== null);
     const clarifyCorrect = clarifyCases.filter(r => r.clarificationCorrect === true).length;
 
     return {
       total,
+      attempted: results.length,
+      errors,
       fullyCorrect,
       fullyCorrectPct: total > 0 ? Math.round((fullyCorrect / total) * 100) : 0,
       fieldAccuracy,
@@ -270,6 +287,9 @@ function formatReport(report) {
   function section(label, metrics) {
     lines.push(`── ${label} ──────────────────────────────────────────────`);
     lines.push(`  Fully correct : ${metrics.fullyCorrect}/${metrics.total} (${metrics.fullyCorrectPct}%)`);
+    if (metrics.errors > 0) {
+      lines.push(`  Unresolved errors: ${metrics.errors}/${metrics.attempted} (excluded from accuracy)`);
+    }
     lines.push(`  Clarification : ${metrics.clarification.correct}/${metrics.clarification.total} (${metrics.clarification.pct}%)`);
     lines.push('  Field-level accuracy:');
     for (const [field, fa] of Object.entries(metrics.fieldAccuracy)) {
@@ -284,7 +304,7 @@ function formatReport(report) {
 
   lines.push('── Case-by-case detail ──────────────────────────────────');
   for (const c of report.cases) {
-    const icon = c.pass ? '✓' : '✗';
+    const icon = c.status === 'error' ? '!' : c.pass ? '✓' : '✗';
     lines.push(`  [${c.id.toString().padStart(2)}] ${icon} [${c.set.padEnd(8)}] ${c.description}`);
     if (c.notes.length > 0) {
       for (const n of c.notes) lines.push(`       ↳ ${n}`);

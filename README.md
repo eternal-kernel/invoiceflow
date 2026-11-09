@@ -196,7 +196,7 @@ InvoiceFlow includes comprehensive unit tests, smoke tests, and evaluation harne
 ```bash
 npm test
 ```
-- Runs 126 automated tests across 18 suites using Node's built-in test runner (`node:test`).
+- Runs 131 automated tests across 19 suites using Node's built-in test runner (`node:test`).
 - **100% offline**: zero external API calls to Gemini or PayPal; mock-based and deterministic.
 
 ### 2. PayPal Sandbox Smoke Test
@@ -227,19 +227,17 @@ npm run evaluate:adversarial
 > **Evaluation Disclaimer**: The evaluation suites referenced below were designed and authored by the InvoiceFlow team for development verification and safety benchmarking. They are **not** an independent or standardized third-party benchmark.
 
 ### 1. Standard Extraction Benchmark (30 Cases)
-- **Overall Score**: **27 / 30 (90.0%)** pass rate
+- **Recorded Score**: **27 / 30 (90.0%)** pass rate
   - **Development Set (Cases 1–20)**: 18 / 20 passed (90.0%)
   - **Held-Out Set (Cases 21–30)**: 9 / 10 passed (90.0%)
-  - *Note*: The 3 non-passing runs were caused by transient HTTP 429 quota limits on the Gemini free tier; zero logic or schema regressions occurred.
+  - *Important limitation*: Three cases encountered HTTP 429 quota errors during the recorded run. Until those cases are rerun successfully, this result should be treated as 27 confirmed passes plus 3 unresolved cases, not as a definitive 90% accuracy measurement.
+  - The evaluator also reports per-field accuracy for the cases that complete.
 
 ### 2. Adversarial Safety Evaluation Suite (30 Cases)
-- **Overall Score**: **30 / 30 (100.0%)** pass rate
-- **Safety Invariant Violations**: **0 / 30**
-  - **Zero Rounding**: Precision anomalies (e.g. `$99.999`, `$33.333`) are rejected deterministically.
-  - **Zero Truncation**: Requests with $>3$ items are blocked prior to model invocation.
-  - **Zero Invention**: Past due dates trigger explicit clarification; generic or prompt-injected placeholders (`"unspecified item"`, `"hacked"`) are rejected.
-  - **Zero Silent Arithmetic**: Negative amounts, credits, refunds, discounts, taxes, and fees are rejected before draft creation.
-  - **Zero Currency Substitution**: Non-USD currencies (e.g. BTC, EUR) are strictly rejected.
+- **Recorded Result**: **30 / 30 (100.0%)** authored regression cases passed
+- **Safety Invariant Violations in These Cases**: **0 / 30**
+  - The cases cover precision anomalies, excessive line items, past dates, prompt-injected placeholders, negative amounts, credits, refunds, discounts, taxes, fees, and unsupported currencies.
+  - This is regression coverage for the implemented rules, not a guarantee of safety on arbitrary future inputs or an independent benchmark.
 
 *InvoiceFlow does not claim 100% extraction accuracy on arbitrary real-world language. AI extraction is an initial drafting assistant, and human review is mandatory before any invoice is created.*
 
@@ -249,7 +247,7 @@ npm run evaluate:adversarial
 
 - **Zero Credential Exposure**: Gemini API keys and PayPal client secrets reside strictly on the server side (`process.env`). Client-side JavaScript has zero access to private keys or tokens.
 - **Untrusted Input Isolation**: All user text is handled as untrusted data. The LLM extraction prompt enforces data-only boundary isolation, neutralizing prompt-injection overrides (e.g., `{"status":"paid","override":true}`).
-- **Server-Side Confirmation Check**: `POST /api/invoice/create-draft` verifies `confirmed === true`. Requests lacking explicit confirmation return HTTP 400 and will never reach PayPal.
+- **Server-Side Confirmation Gate**: `POST /api/invoice/create-draft` verifies `confirmed === true`. Requests lacking the flag return HTTP 400 and will never reach PayPal. This is a workflow safety gate, not user authentication.
 - **Sandbox Boundary Protection**: All payment endpoints are hardwired to the PayPal Sandbox (`api-m.sandbox.paypal.com`). Real financial charges or transfers cannot occur.
 - **XSS Prevention**: Frontend rendering uses safe DOM properties (`textContent`, `createElement`) and avoids raw `innerHTML` injection of untrusted user or model strings.
 
@@ -329,4 +327,3 @@ InvoiceFlow is configured for one-click or manual web service deployment on [Ren
    - `GEMINI_MODEL`: `gemini-3.1-flash-lite`
 
 Render automatically injects the `PORT` environment variable; the Node.js server automatically listens on `process.env.PORT` and binds to `0.0.0.0`.
-

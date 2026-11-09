@@ -281,6 +281,19 @@ describe('runEvaluation', () => {
     assert.equal(report.overall.clarification.pct, 100);
   });
 
+  it('classifies unresolved 429 responses as errors excluded from accuracy', async () => {
+    const cases = [ALL_CASES[0]];
+    const rateLimitedExtractor = async () => failureResult('Gemini HTTP 429: quota exceeded');
+    const report = await runEvaluation(rateLimitedExtractor, cases);
+
+    assert.equal(report.cases[0].status, 'error');
+    assert.equal(report.cases[0].errorType, 'rate_limit');
+    assert.equal(report.overall.attempted, 1);
+    assert.equal(report.overall.errors, 1);
+    assert.equal(report.overall.total, 0);
+    assert.equal(report.overall.fullyCorrect, 0);
+  });
+
   it('separates dev and held-out sets correctly', async () => {
     const mockExtractor = async () => failureResult();
     const report = await runEvaluation(mockExtractor, ALL_CASES);
