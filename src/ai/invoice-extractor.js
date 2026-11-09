@@ -107,7 +107,7 @@ async function extractInvoiceDraft(text, options = {}) {
     };
   }
 
-  const model = options.model || process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  const model = options.model || process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite';
   const fetchFn = options.fetch || globalThis.fetch;
   const apiBaseUrl = (options.apiBaseUrl || 'https://generativelanguage.googleapis.com/v1beta').replace(/\/+$/, '');
 

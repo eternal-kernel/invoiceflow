@@ -305,6 +305,38 @@ test('API key missing', async () => {
   }
 });
 
+test('uses gemini-3.1-flash-lite as default fallback model', async () => {
+  const originalModel = process.env.GEMINI_MODEL;
+  delete process.env.GEMINI_MODEL;
+
+  try {
+    let requestedUrl = '';
+    const mockFetch = createMockFetch(200, createGeminiResponse(JSON.stringify({
+      recipientName: 'Test Corp',
+      recipientEmail: 'test@example.com',
+      currency: 'USD',
+      dueDate: null,
+      items: [{ description: 'Dev Work', quantity: 1, unitAmount: 100 }],
+      missingFields: [],
+      ambiguities: [],
+    })), (url) => {
+      requestedUrl = url;
+    });
+
+    const result = await extractInvoiceDraft('Bill Test Corp $100 for Dev Work', {
+      apiKey: 'test-key',
+      fetch: mockFetch,
+    });
+
+    assert.equal(result.success, true);
+    assert.ok(requestedUrl.includes('models/gemini-3.1-flash-lite:generateContent'));
+  } finally {
+    if (originalModel !== undefined) {
+      process.env.GEMINI_MODEL = originalModel;
+    }
+  }
+});
+
 test('no network calls during npm test', async () => {
   // Ensure that all automated tests in this file rely exclusively on mock fetch implementations
   // and that unmocked invocations are never triggered over the wire.
