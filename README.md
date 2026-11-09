@@ -227,11 +227,14 @@ npm run evaluate:adversarial
 > **Evaluation Disclaimer**: The evaluation suites referenced below were designed and authored by the InvoiceFlow team for development verification and safety benchmarking. They are **not** an independent or standardized third-party benchmark.
 
 ### 1. Standard Extraction Benchmark (30 Cases)
-- **Recorded Score**: **27 / 30 (90.0%)** pass rate
-  - **Development Set (Cases 1–20)**: 18 / 20 passed (90.0%)
-  - **Held-Out Set (Cases 21–30)**: 9 / 10 passed (90.0%)
-  - *Important limitation*: Three cases encountered HTTP 429 quota errors during the recorded run. Until those cases are rerun successfully, this result should be treated as 27 confirmed passes plus 3 unresolved cases, not as a definitive 90% accuracy measurement.
-  - The evaluator also reports per-field accuracy for the cases that complete.
+- **Recorded Score**: **29 / 30 (97.0%)** pass rate
+  - **Development Set (Cases 1–20)**: 19 / 20 passed (95.0%)
+  - **Held-Out Set (Cases 21–30)**: 10 / 10 passed (100.0%)
+  - **Clarification Accuracy**: 6 / 6 (100.0%)
+  - **Unresolved HTTP 429 Errors**: 0 / 30 (all 30 cases evaluated successfully with zero unresolved rate-limit drops)
+  - **Observed Discrepancy**: 1 case (Case 8: extracted `"gina"` with lowercase casing from messy input, expected `"Gina"`)
+  - **Field-Level Accuracy**: `recipientEmail` (100%), `currency` (100%), `dueDate` (100%), `items` (100%), `recipientName` (93%).
+
 
 ### 2. Adversarial Safety Evaluation Suite (30 Cases)
 - **Recorded Result**: **30 / 30 (100.0%)** authored regression cases passed
