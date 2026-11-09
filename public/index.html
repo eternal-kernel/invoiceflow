@@ -17,16 +17,16 @@
   <div id="loading">Processing…</div>
   <div id="message"></div>
 
-  <section id="invoice-form">
+  <section id="invoice-form" autocomplete="off">
     <h2>Invoice Details</h2>
-    <label>Recipient Name<br /><input type="text" id="recipientName" /></label>
-    <label>Recipient Email<br /><input type="email" id="recipientEmail" /></label>
-    <label>Currency<br /><input type="text" id="currency" value="USD" /></label>
-    <label>Due Date<br /><input type="date" id="dueDate" /></label>
+    <label>Recipient Name<br /><input type="text" id="recipientName" autocomplete="off" /></label>
+    <label>Recipient Email<br /><input type="email" id="recipientEmail" autocomplete="off" /></label>
+    <label>Currency<br /><input type="text" id="currency" autocomplete="off" /></label>
+    <label>Due Date<br /><input type="date" id="dueDate" autocomplete="off" /></label>
     <h3>Line Items</h3>
     <div id="items"></div>
     <section id="confirm-section">
-      <button id="createDraftBtn">Confirm &amp; Create Draft</button>
+      <button id="createDraftBtn" disabled>Confirm &amp; Create Draft</button>
     </section>
   </section>
 
